@@ -140,10 +140,12 @@ async def on_message(message):
             return  # response might just be nothing e.g. if user is spamming
         s = 1900  # max message length
         r = response[:s]
+
         while r:  # if we get a really long response, need to break it up
+            #print(r)
             await message.channel.send(r)
-            s += 1900
             r = response[s:s+1900]
+            s += 1900
             await(asyncio.sleep(1))
 
         return  # don't also try to process it as a command
