@@ -6,6 +6,7 @@ import random
 import sys
 import re
 
+
 prefixes = ["?", "Snek ", "snek ", "SNEK "]   # note trailing space in name prefix
 intents = discord.Intents.default()  # new for version 2.0
 intents.message_content = True

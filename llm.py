@@ -11,6 +11,7 @@ import hashlib
 from discord.ext import commands
 import datetime
 from functools import wraps
+from moderation import contains_forbidden
 
 rl = chr(128680)  # emoji siren light character for moderation message
 DISCORD_ID_FINDER = re.compile("<@[0-9]+>")
@@ -161,12 +162,20 @@ class ConvoTracker(commands.Cog):
 
     def get_moderation(self, uid, message):
 
-        for word in message.split(" "):
-            if word.lower() in self.badwords:
-                print(f"message filtered due to bad word: {word}")
-                return True
+        """  # sweet summer child method:
+                for word in message.split(" "):
+                    if word.lower() in self.badwords:
+                        print(f"message filtered due to bad word: {word}")
+                        return True
 
-        return False
+                return False
+        """
+
+        result, match = contains_forbidden(message, self.badwords)
+        if result:
+            print("message filtered due to: ", match)
+        return result
+
 
     def get_user_specific_prompt_data(self, uid):
 
