@@ -96,14 +96,16 @@ class ConvoTracker(commands.Cog):
 
         self.bot = bot
 
-        with open("secret/prompt.txt", "r") as f:
-            prompt = f.read()
+        #with open("secret/prompt.txt", "r") as f:
+            #prompt = f.read()
+
+        # self.prompt = prompt
 
         with open("secret/llm_settings.json", "r") as f:
             js = json.load(f)  # use it later
             self.client = AsyncOpenAI(base_url=js["base_url"],
                                       api_key="local")  # api key not used but OpenAI library still wants it
-            self.prompt = prompt
+
             self.llm_args = js["llm_args"]
             self.memory_llm_args = js["memory_llm_args"]  # different settings for memory consolidation
 
@@ -126,6 +128,15 @@ class ConvoTracker(commands.Cog):
 
         self.scheduled_dreams = set()  # users who spoke to us since we last consolidated memories
         self.dream_task = asyncio.ensure_future(self.dream_loop())  # I don't understand any of this stuff ._.
+
+    @property
+    def prompt(self):
+
+        """Read it new from the file each time so it can be edited live."""
+
+        with open("secret/prompt.txt", "r") as f:
+            prompt = f.read()
+        return prompt
 
     def reset_semaphores(self):
 
