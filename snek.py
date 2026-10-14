@@ -126,22 +126,20 @@ async def on_message(message):
     if ctx.command is None and message.content.startswith(tuple(prefixes)):
         response = None
         try:
-            async with asyncio.timeout(12):
-                # the message is addressed to snek but doesn't contain a command, send the text to the LLM for a response
-                if bazzer := old_command_finder.match(message.content[5:]):  # user is asking for a command from the old version
-                    async with message.channel.typing():
-                        print("someone asked for an old function")
-                        fname = bazzer.group()
-                        response = await bot.cogs["ConvoTracker"].forgotten_function(message.author.id, fname)
 
-                else:
-                    async with message.channel.typing():
-                        response = await bot.cogs["ConvoTracker"].get_moderated_response(message.author.id,
-                                                                            message.channel.id,
-                                                                            message.content[5:])  # strip off "snek "
-        except TimeoutError:
-            await message.channel.send("🐍💤")
-            bot.cogs["ConvoTracker"].reset_semaphores()
+            # the message is addressed to snek but doesn't contain a command, send the text to the LLM for a response
+            if bazzer := old_command_finder.match(message.content[5:]):  # user is asking for a command from the old version
+                async with message.channel.typing():
+                    print("someone asked for an old function")
+                    fname = bazzer.group()
+                    response = await bot.cogs["ConvoTracker"].forgotten_function(message.author.id, fname)
+
+            else:
+                async with message.channel.typing():
+                    response = await bot.cogs["ConvoTracker"].get_moderated_response(message.author.id,
+                                                                        message.channel.id,
+                                                                        message.content[5:])  # strip off "snek "
+
         except openai.APIConnectionError:
             await message.channel.send("🐍💤")
             bot.cogs["ConvoTracker"].reset_semaphores()
