@@ -5,7 +5,7 @@ import json
 import random
 import sys
 import re
-
+import openai
 
 prefixes = ["?", "Snek ", "snek ", "SNEK "]   # note trailing space in name prefix
 intents = discord.Intents.default()  # new for version 2.0
@@ -124,18 +124,29 @@ async def on_message(message):
     #if message.channel.id in bot.cbchannels:
     # commented that out because we can talk to snek anywhere
     if ctx.command is None and message.content.startswith(tuple(prefixes)):
-        # the message is addressed to snek but doesn't contain a command, send the text to the LLM for a response
-        if bazzer := old_command_finder.match(message.content[5:]):  # user is asking for a command from the old version
-            async with message.channel.typing():
-                print("someone asked for an old function")
-                fname = bazzer.group()
-                response = await bot.cogs["ConvoTracker"].forgotten_function(message.author.id, fname)
+        response = None
+        try:
+            async with asyncio.timeout(12):
+                # the message is addressed to snek but doesn't contain a command, send the text to the LLM for a response
+                if bazzer := old_command_finder.match(message.content[5:]):  # user is asking for a command from the old version
+                    async with message.channel.typing():
+                        print("someone asked for an old function")
+                        fname = bazzer.group()
+                        response = await bot.cogs["ConvoTracker"].forgotten_function(message.author.id, fname)
 
-        else:
-            async with message.channel.typing():
-                response = await bot.cogs["ConvoTracker"].get_moderated_response(message.author.id,
-                                                                    message.channel.id,
-                                                                    message.content[5:])  # strip off "snek "
+                else:
+                    async with message.channel.typing():
+                        response = await bot.cogs["ConvoTracker"].get_moderated_response(message.author.id,
+                                                                            message.channel.id,
+                                                                            message.content[5:])  # strip off "snek "
+        except TimeoutError:
+            await message.channel.send("🐍💤")
+            bot.cogs["ConvoTracker"].reset_semaphores()
+        except openai.APIConnectionError:
+            await message.channel.send("🐍💤")
+            bot.cogs["ConvoTracker"].reset_semaphores()
+
+        # SEMAPHORES IF TIMEOUT
 
         if not response:
             return  # response might just be nothing e.g. if user is spamming

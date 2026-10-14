@@ -127,6 +127,11 @@ class ConvoTracker(commands.Cog):
         self.scheduled_dreams = set()  # users who spoke to us since we last consolidated memories
         self.dream_task = asyncio.ensure_future(self.dream_loop())  # I don't understand any of this stuff ._.
 
+    def reset_semaphores(self):
+
+        for k in self.semaphores.keys():
+            self.semaphores[k] =  False
+
     def cancel_tasks(self):
 
         self.dream_task.cancel()
