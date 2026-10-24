@@ -24,6 +24,8 @@ def format_convo_log(ls, earliest):
     block of text of user/agent interactions to pass to the memory consolidation mechanism."""
 
     out = ""
+    cnt = 0
+    t = None
 
     for q in ls:
         t = datetime.datetime.fromisoformat(q["timestamp"])
@@ -36,8 +38,11 @@ def format_convo_log(ls, earliest):
             k = "content"
 
         out += f'''{q["role"]}: {q[k]}\n'''
+        cnt += 1
+        if cnt > 15:
+            break  # don't gather too much
 
-    return out
+    return out, t
 
 def track_activity(func):
 
@@ -392,7 +397,7 @@ class ConvoTracker(commands.Cog):
             for line in f.readlines():
                 convo_log.append(json.loads(line))
 
-            new_info = format_convo_log(convo_log, last_updated)  # big block of text to send to the LLM for summarizat
+            new_info, new_t = format_convo_log(convo_log, last_updated)  # big block of text to send to the LLM for summarizat
 
 
         messages = [{"role": "system", "content": sum_prompt},
@@ -411,7 +416,9 @@ class ConvoTracker(commands.Cog):
             print(e)
             return
 
-        out = {"timestamp":datetime.datetime.now().isoformat(),"memories":answer}
+        #out = {"timestamp":datetime.datetime.now().isoformat(),"memories":answer}
+        out = {"timestamp":new_t, "memories":answer}  # we use the timestamp of how far we got to thru the log, we
+        # might not get thru the whole thing
         with open(f"memories/{uid}.memory", "a", encoding="utf-8") as f:
             f.write(json.dumps(out))
             f.write("\n")
