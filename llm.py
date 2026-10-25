@@ -363,7 +363,7 @@ class ConvoTracker(commands.Cog):
 
         """Consolidate memories and message logs and generate a prompt supplement specifically for each user"""
 
-        if self.been_idle():
+        if not self.been_idle():
             if len(self.scheduled_dreams) > 0:
                 uid = self.scheduled_dreams.pop()  # arbitrarily get a user who we spoke to recently
                 await self.rember(uid)
@@ -399,7 +399,6 @@ class ConvoTracker(commands.Cog):
 
             new_info, new_t = format_convo_log(convo_log, last_updated)  # big block of text to send to the LLM for summarizat
 
-
         messages = [{"role": "system", "content": sum_prompt},
                     {"role": "user", "content": f"begin chat transcript: {new_info}"}]
 
@@ -417,7 +416,7 @@ class ConvoTracker(commands.Cog):
             return
 
         #out = {"timestamp":datetime.datetime.now().isoformat(),"memories":answer}
-        out = {"timestamp":new_t, "memories":answer}  # we use the timestamp of how far we got to thru the log, we
+        out = {"timestamp":new_t.isoformat(), "memories":answer}  # we use the timestamp of how far we got to thru the log, we
         # might not get thru the whole thing
         with open(f"memories/{uid}.memory", "a", encoding="utf-8") as f:
             f.write(json.dumps(out))
