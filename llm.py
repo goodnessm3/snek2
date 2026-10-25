@@ -363,7 +363,7 @@ class ConvoTracker(commands.Cog):
 
         """Consolidate memories and message logs and generate a prompt supplement specifically for each user"""
 
-        if not self.been_idle():
+        if self.been_idle():
             if len(self.scheduled_dreams) > 0:
                 uid = self.scheduled_dreams.pop()  # arbitrarily get a user who we spoke to recently
                 await self.rember(uid)
